@@ -9,9 +9,8 @@ From: python:3.10
 %post
     # Install dependencies
     # (pandas is recommended to support parsing dataset tags)
-    pip install --no-cache-dir pandas
     # Install algorithm
-    pip install --no-cache-dir casanovo
+    pip install --no-cache-dir casanovo pandas
 
     # Download additional weights
     cd /algo

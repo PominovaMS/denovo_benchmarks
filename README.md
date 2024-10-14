@@ -101,7 +101,13 @@ To run the benchmark locally:
     sudo apt install squashfuse gocryptfs fuse-overlayfs  
     ```
 
-    Run the benchmark:
+    Run the benchmark using all algorithms on all sample datasets. Change the `DATASET_DIR` variable in the `Makefile` to another location if you want to run the benchmark using all algorithms on a different dataset.
+
+    ```bash
+    make run_all
+    ```
+
+    Run the benchmark using all algorithms on single dataset:
 
     ```bash
     ./run.sh /path/to/dataset/dir
@@ -110,6 +116,17 @@ To run the benchmark locally:
     ```bash
     ./run.sh sample_data/9_species_human
     ```
+
+    Run the benchmark using a single algorithm on a single dataset:
+
+    ```bash
+    ./run.sh /path/to/dataset/dir algorithm_name
+    ```
+    Example:
+
+    ```bash
+    ./run.sh sample_data/9_species_human pi-HelixNovo
+    ``` 
 
 
 ## Input data structure

@@ -3,14 +3,14 @@ From: python:3.10
 
 %post
     # Setup evaluation environment
-    pip install --no-cache-dir numpy
-    pip install --no-cache-dir pandas>=2.1.2
-    pip install --no-cache-dir scikit-learn
-    pip install --no-cache-dir matplotlib
-    pip install --no-cache-dir plotly==5.20.0
-    pip install --no-cache-dir tqdm
-    pip install --no-cache-dir PyYAML
-    pip install --no-cache-dir pyteomics==4.7.1
-    pip install --no-cache-dir SQLAlchemy==2.0.30
-    pip install --no-cache-dir lxml==4.9.1
-    pip install --no-cache-dir spectrum-utils==0.4.2
+    pip install --no-cache-dir numpy \
+                               pandas>=2.1.2 \
+                               scikit-learn \
+                               matplotlib \
+                               plotly==5.20.0 \
+                               tqdm \
+                               PyYAML \
+                               pyteomics==4.7.1 \
+                               SQLAlchemy==2.0.30 \ 
+                               lxml==4.9.1 \
+                               spectrum-utils==0.4.2 \

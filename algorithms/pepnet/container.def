@@ -14,10 +14,10 @@ From: python:3.10
     # Install dependencies
     # (pandas is recommended to support parsing dataset tags)
     pip install --no-cache-dir numba==0.57.1
-    pip install --no-cache-dir pandas==1.5.3
-    pip install --no-cache-dir pyteomics==4.7.3
-    pip install --no-cache-dir tensorflow==2.14
-    pip install --no-cache-dir tensorflow_addons
+                               pandas==1.5.3 \
+                               pyteomics==4.7.3 \
+                               tensorflow==2.14 \
+                               tensorflow_addons
 
     # Download additional weights
     cd /algo
