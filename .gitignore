@@ -1,4 +1,5 @@
 # Data
+proteomes/
 datasets/*
 !datasets/sample_data/
 
