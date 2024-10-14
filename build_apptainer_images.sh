@@ -64,7 +64,7 @@ for algo_name in algorithms/*; do
 done
 
 # --- Build evaluation image if no algorithm was provided ---
-if [ -z "$requested_algo" ]; then
+if [ -z "$requested_algo" ] || [ "$requested_algo" == "evaluation" ]; then
   # Construct paths for the evaluation image
   evaluation_sif="evaluation.sif"
   evaluation_def="evaluation.def"
