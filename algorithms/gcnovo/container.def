@@ -5,32 +5,39 @@ From: python:3.10.12
     export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 %files
-    # 把你的 Python 脚本文件复制到容器中
-    ./ /algo
-
+    # Copy algorithm-related files to a separate dir /algo.
+    algorithms/base /algo/base
+    algorithms/gcnovo/gcnovo_main.py /algo
+    algorithms/gcnovo/input_mapper.py /algo
+    algorithms/gcnovo/make_predictions.sh /algo
+    algorithms/gcnovo/param/params.cfg /algo/param
+    
 %post
-    # 更新系统并安装一些系统工具
+	# Make sure make_predictions.sh file is executable.
+    chmod +x /algo/make_predictions.sh
+
+    # Install system packages
     apt-get update && apt-get install -y \
         git \
         curl \
         && rm -rf /var/lib/apt/lists/*
 
     # Install Python packages
-    pip install cython==3.0.5
-    pip install filelock==3.9.0
-    pip install mpmath==1.3.0
-    pip install numpy==1.26.2
-    pip install requests==2.28.1
-    pip install sympy==1.12
-    pip install torch==2.1.1
-    pip install typing-extensions==4.4.0
-    pip install urllib3==1.26.13
-    pip install pandas==2.2.2
-    pip install pyteomics==4.7.3
+    pip install cython==3.0.5 \
+                filelock==3.9.0 \
+                mpmath==1.3.0 \
+                numpy==1.26.2 \
+                requests==2.28.1 \
+                sympy==1.12 \
+                torch==2.1.1 \
+                typing-extensions==4.4.0 \
+                urllib3==1.26.13 \
+                pandas==2.2.2 \
+                pyteomics==4.7.3
 
-
+# Run algorithm and convert outputs.
+# Data is expected to be mounted into /algo/data dir.
 %runscript
-    # 容器运行时执行的默认命令，执行 Python 脚本
     echo "Running main.py..."
     cd /algo
     python main.py
