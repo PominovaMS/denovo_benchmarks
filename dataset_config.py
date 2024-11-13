@@ -11,7 +11,21 @@ class DatasetTag(str, enum.Enum):
     timstof = "timstof"
     waters = "waters"
     sciex = "sciex"
+    agilent = "agilent"
+    astral = "astral"
+    deamidation = "deamidation"
     phosphorylation = "phosphorylation"
+    oxidation = "oxidation"
+    formylation = "formylation"
+    acetylation = "acetylation"
+    methylation = "methylation"
+    carbamidomethylation = "carbamidomethylation"
+    formaldehyde = "formaldehyde"
+    ammonia_loss = "ammonia_loss"
+    sodium_adduct = "sodium_adduct"
+    silac = "silac"
+    tmt = "tmt"
+    # TODO: other modifications?
 
 
 class DataDownloadConfig(BaseModel):
@@ -27,6 +41,8 @@ class DataDownloadConfig(BaseModel):
     # Keywords to select files to download.
     # Only filenames containing all the keywords are downloaded
     keywords: tp.Optional[tp.List[str]] = []
+    # Keywords to exclude files from downloading.
+    exclude_keywords: tp.Optional[tp.List[str]] = []
 
 
 class DBSearchConfig(BaseModel):
@@ -34,6 +50,8 @@ class DBSearchConfig(BaseModel):
     database_path: tp.Union[str, tp.List[str]]
     # Extension of spectra files used for the search # TODO: rename to search_ext? 
     ext: str = ".mzml"
+    # Number of splits (for running DB search with large DB).
+    n_db_splits: int = 1
     # Additional (optional) search params. Only needs to be passed 
     # for non-default params. Can be an emtpy dict. 
     search_params: tp.Dict[str, tp.Any]
@@ -53,6 +71,8 @@ class Config(BaseModel):
     name: str
     # Dataset properties tags
     tags: tp.List[DatasetTag] = []
+    # Dataset description
+    desc: str
     # Data downloading related properties
     download: DataDownloadConfig
     # Database search related properties

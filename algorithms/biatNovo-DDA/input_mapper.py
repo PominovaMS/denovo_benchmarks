@@ -1,14 +1,11 @@
-# python 2.7
 """
-Script to convert input .mgf files from the common input format 
+Script to convert input .mgf files from the common input format
 to the algorithm expected format.
 """
 
 import argparse
 import os
-import re
 from pyteomics import mgf
-from pyteomics.mass.unimod import Unimod
 from tqdm import tqdm
 from collections import namedtuple
 from base import InputMapperBase
@@ -17,7 +14,7 @@ from base import InputMapperBase
 PTM = namedtuple("DeepNovoPTM", ["amino_acid", "ptm_unimod_id", "representation"])
 
 class InputMapper(InputMapperBase):
-    
+
     def format_input(self, spectrum, spectrum_idx, filename):
         """
         Convert the spectrum (annotation sequence and params) to the
@@ -36,12 +33,9 @@ class InputMapper(InputMapperBase):
         transformed_spectrum : dict
             Peptide sequence in the algorithm input format.
         """
-        
+
         # add dummy labels
         spectrum["params"]["seq"] = "PEPTIDE"
-
-        # fix pepmass to be single value
-        spectrum["params"]["pepmass"] = spectrum["params"]["pepmass"][0]
 
         # create "scans" based on filename and spectrum index (0-based)
         spectrum["params"]["scans"] = filename + ":" + str(spectrum_idx)
