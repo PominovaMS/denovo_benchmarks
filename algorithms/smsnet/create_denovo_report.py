@@ -47,90 +47,90 @@ water = 18.010565
 ##########################################################
 ### MAIN SCRIPT
 def main(output_folder, mgf_folder, model):
-  rescore_threshold = fdr_threshold_map[model][fdr_target]
-  predictions = {}
+    rescore_threshold = fdr_threshold_map[model][fdr_target]
+    predictions = {}
 
-  spectra_count = 0
-  predicted_seq_count = 0
-  predicted_full_seq_count = 0
-  predicted_aa_count = 0
-  predicted_mask_count = 0
+    spectra_count = 0
+    predicted_seq_count = 0
+    predicted_full_seq_count = 0
+    predicted_aa_count = 0
+    predicted_mask_count = 0
 
-  for f in os.listdir(output_folder):
-      if f.endswith('_rescore'):
-          fname = f[:-8]
-          predictions[fname] = {}
+    for f in os.listdir(output_folder):
+        if f.endswith('_rescore'):
+            fname = f[:-8]
+            predictions[fname] = {}
 
-          with open(os.path.join(output_folder, fname), 'rt') as seq_in, open(os.path.join(output_folder, f), 'rt') as score_in:
-              seq_line = seq_in.readline()
-              score_line = score_in.readline()
-              current_id = 0 ## use line number to map between MGF and OUTPUT
+            with open(os.path.join(output_folder, fname), 'rt') as seq_in, open(os.path.join(output_folder, f), 'rt') as score_in:
+                seq_line = seq_in.readline()
+                score_line = score_in.readline()
+                current_id = 0 ## use line number to map between MGF and OUTPUT
 
-              while seq_line and score_line:
-                  seq_list = seq_line.strip().split()
-                  score_list = score_line.strip().split()
+                while seq_line and score_line:
+                    seq_list = seq_line.strip().split()
+                    score_list = score_line.strip().split()
 
-                  if not '<s>' in seq_list and not '<unk>' in seq_list and len(seq_list) == len(score_list): ## valid prediction
-                      score_list = [math.exp(float(x)) for x in score_list]
-                      mask_list = ['Y'] * len(seq_list)
-                      mask_count = 0
+                    if not '<s>' in seq_list and not '<unk>' in seq_list and len(seq_list) == len(score_list): ## valid prediction
+                        score_list = [math.exp(float(x)) for x in score_list]
+                        mask_list = ['Y'] * len(seq_list)
+                        mask_count = 0
 
-                      for i in range(len(score_list)):
-                          if score_list[i] < rescore_threshold:
-                              mask_list[i] = 'N'
-                              mask_count += 1
+                        for i in range(len(score_list)):
+                            if score_list[i] < rescore_threshold:
+                                mask_list[i] = 'N'
+                                mask_count += 1
 
-                          temp = str(score_list[i]).split('.')
-                          score_list[i] = temp[0] + '.' + temp[1][:2]
+                            temp = str(score_list[i]).split('.')
+                            score_list[i] = temp[0] + '.' + temp[1][:2]
 
-                      ## count as predicted only if all thresholds are satisfied
-                      if len(seq_list) - mask_count >= min_predicted_aa and (len(seq_list) - mask_count) / len(seq_list) >= min_predicted_frac:
-                          predicted_seq_count += 1
-                          predicted_aa_count += len(seq_list)
-                          predicted_mask_count += mask_count
+                        ## count as predicted only if all thresholds are satisfied
+                        if len(seq_list) - mask_count >= min_predicted_aa and (len(seq_list) - mask_count) / len(seq_list) >= min_predicted_frac:
+                            predicted_seq_count += 1
+                            predicted_aa_count += len(seq_list)
+                            predicted_mask_count += mask_count
 
-                          predicted_seq = ''
-                          total_mass = 0
-                          unknown_mass = 0
+                            predicted_seq = ''
+                            total_mass = 0
+                            unknown_mass = 0
 
-                          for i in range(len(score_list)):
-                              total_mass += aa_mass[seq_list[i]]
+                            for i in range(len(score_list)):
+                                total_mass += aa_mass[seq_list[i]]
 
-                              if mask_list[i] == 'Y':
-                                  if unknown_mass > 0: ## preceded by masked positions
-                                      temp = str(unknown_mass).split('.')
-                                      predicted_seq += '(' + temp[0] + '.' + temp[1][:min(5, len(temp[1]))] + ')'
-                                      unknown_mass = 0
+                                if mask_list[i] == 'Y':
+                                    if unknown_mass > 0: ## preceded by masked positions
+                                        temp = str(unknown_mass).split('.')
+                                        predicted_seq += '(' + temp[0] + '.' + temp[1][:min(5, len(temp[1]))] + ')'
+                                        unknown_mass = 0
 
-                                  predicted_seq += seq_list[i]
-                              else:
-                                  unknown_mass += aa_mass[seq_list[i]]
+                                    predicted_seq += seq_list[i]
+                                else:
+                                    unknown_mass += aa_mass[seq_list[i]]
 
-                          if unknown_mass > 0: ## ends with unknown mass
-                              temp = str(unknown_mass).split('.')
-                              predicted_seq += '(' + temp[0] + '.' + temp[1][:min(5, len(temp[1]))] + ')'
+                            if unknown_mass > 0: ## ends with unknown mass
+                                temp = str(unknown_mass).split('.')
+                                predicted_seq += '(' + temp[0] + '.' + temp[1][:min(5, len(temp[1]))] + ')'
 
-                          if mask_count == 0:
-                              predicted_full_seq_count += 1
+                            if mask_count == 0:
+                                predicted_full_seq_count += 1
 
-                          theoretical_mhp = str(total_mass + proton + water)
-                          predictions[fname][current_id] = [predicted_seq, ';'.join([str(x) for x in score_list]), theoretical_mhp, ''.join(seq_list)]
+                            theoretical_mhp = str(total_mass + proton + water)
+                            predictions[fname][current_id] = [predicted_seq, ';'.join([str(x) for x in score_list]), theoretical_mhp, ''.join(seq_list)]
 
-                  current_id += 1 ## update ID
-                  seq_line = seq_in.readline()
-                  score_line = score_in.readline()
+                    current_id += 1 ## update ID
+                    seq_line = seq_in.readline()
+                    score_line = score_in.readline()
 
-          spectra_count += current_id
+            spectra_count += current_id
 
-  print('total spectra:                     ', spectra_count)
-  print('predicted sequences:               ', predicted_seq_count)
-  print('predicted full sequences:          ', predicted_full_seq_count)
-  print('amino acids in predicted sequences:', predicted_aa_count)
-  print('amino acids after masking:         ', predicted_aa_count - predicted_mask_count)
-  print('masks:                             ', predicted_mask_count)
+    print('total spectra:                     ', spectra_count)
+    print('predicted sequences:               ', predicted_seq_count)
+    print('predicted full sequences:          ', predicted_full_seq_count)
+    print('amino acids in predicted sequences:', predicted_aa_count)
+    print('amino acids after masking:         ', predicted_aa_count - predicted_mask_count)
+    print('masks:                             ', predicted_mask_count)
 
-  for f in os.listdir(mgf_folder):
-      if f.endswith('.mgf'):
+    for f in os.listdir(mgf_folder):
+        if f.endswith('.mgf'):
           fname = f[:-4]
 
           if fname in predictions:
@@ -183,15 +183,15 @@ def main(output_folder, mgf_folder, model):
 
                       line = fin.readline()
 
-  with open('_'.join([mgf_folder, model, 'fdr' + str(fdr_target)]) + '.tsv', 'w') as fout:
-      fout.write('\t'.join(['MS File', 'ScanNum', 'Charge', 'RT(min)', 'ObservedM/Z', 'ObservedM+H', 'TheoreticalM+H', 'MassError(ppm)', 'ObservedInt', 'RawPrediction', 'MaskedPrediction', 'Scores']) + '\n')
+    with open('_'.join([mgf_folder, model, 'fdr' + str(fdr_target)]) + '.tsv', 'w') as fout:
+        fout.write('\t'.join(['MS File', 'ScanNum', 'Charge', 'RT(min)', 'ObservedM/Z', 'ObservedM+H', 'TheoreticalM+H', 'MassError(ppm)', 'ObservedInt', 'RawPrediction', 'MaskedPrediction', 'Scores']) + '\n')
 
-      for fname in predictions:
-          for spectrum in predictions[fname]:
-              if not len(predictions[fname][spectrum]) == 12:
-                  print(fname, spectrum, predictions[fname][spectrum])
-              else:
-                  fout.write('\t'.join([predictions[fname][spectrum][i] for i in [4, 5, 6, 7, 8, 9, 2, 10, 11, 3, 0, 1]]) + '\n')
+        for fname in predictions:
+            for spectrum in predictions[fname]:
+                if not len(predictions[fname][spectrum]) == 12:
+                    print(fname, spectrum, predictions[fname][spectrum])
+                else:
+                    fout.write('\t'.join([predictions[fname][spectrum][i] for i in [4, 5, 6, 7, 8, 9, 2, 10, 11, 3, 0, 1]]) + '\n')
 
 if __name__ == "__main__":
   main(sys.argv[1], sys.argv[2], sys.argv[3])
