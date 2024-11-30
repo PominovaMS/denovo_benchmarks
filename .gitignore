@@ -1,6 +1,7 @@
 # Data
 datasets/*
 !datasets/sample_data/
+proteomes/
 
 # Outputs
 metrics.csv
