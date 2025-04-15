@@ -10,7 +10,7 @@ gast==0.2.0
 grpcio==1.15.0
 h5py==2.8.0
 ipykernel==5.0.0
-ipython==7.0.1
+ipython==8.10.0
 ipython-genutils==0.2.0
 ipywidgets==7.4.2
 jedi==0.13.1
