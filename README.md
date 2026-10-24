@@ -77,7 +77,7 @@ Building containers and running the benchmark locally requires the following:
 
 - Operating System: Linux (required for Apptainer).
 - Dependencies:
-    - [Apptainer](https://apptainer.org/docs/user/main/quick_start.html).
+    - [Apptainer](https://apptainer.org/docs/user/main/quick_start.html) (tested with version 1.4.5).
     
     Make sure the [Apptainer dependencies](https://github.com/apptainer/apptainer/blob/main/INSTALL.md) are installed. 
 
@@ -90,7 +90,15 @@ Building containers and running the benchmark locally requires the following:
 
     The dashboard was checked with Python 3.11, Streamlit 1.65, pandas 3.0 and plotly 6.5.2.
 
-We run the tools on a high-performance computing (HPC) system using the **Suse Linux Enterprise Server** operating system, equipped with two **Intel Xeon Gold 6526Y processors**, **512 GB of RAM**, and **four NVIDIA L40S GPUs**.
+    All other dependencies of the algorithms and of the evaluation (with their versions) are installed inside their Apptainer containers 
+    (see `algorithms/<algorithm>/container.def` and `evaluation.def`). The evaluation needs internet access to the [Koina](https://koina.wilhelmlab.org) prediction service.
+
+- Hardware: an NVIDIA GPU is needed to run the algorithms. **SMSNet** needs a GPU supported by CUDA 9/10.
+
+The benchmark was tested on:
+- a high-performance computing (HPC) system with **openSUSE Leap 15.6**, **Apptainer 1.4.5** and NVIDIA driver **580.126**, 
+equipped with two **Intel Xeon Gold 6526Y processors**, **512 GB of RAM**, and **four NVIDIA L40S GPUs** (all algorithms except SMSNet, PEAKS and GraphNovo);
+- the **CalcUA** HPC cluster (University of Antwerp) with **Rocky Linux 9.8**, **Apptainer 1.5.4** and NVIDIA driver **580.178**, equipped with an **NVIDIA Tesla P100** GPU (SMSNet).
 
 The current source code does not include containerized implementations for **PEAKS** and **GraphNovo** due to their integration within the **PEAKS Studio 12** software, which is only available as a graphical user interface (GUI) tool compatible with the Windows operating system. These tools will be executed manually on a desktop computer running **Windows 11**, equipped with an **Intel Core i9 processor** and **128 GB of RAM**.
 
@@ -126,6 +134,18 @@ datasets/
     ...
 ```
 
+To run the benchmark on your own data:
+- Name the dataset folder with a unique name and put the spectra in its `mgf/` subfolder (see the input format above).
+- `labels.csv` contains two columns: 
+    - `spectrum_id` — `{filename}:{index}`, where `filename` is the name of the `.mgf` file (without extension) 
+    and `index` is the index (0-based) of the spectrum in this file;
+    - `seq` — the database search peptide, with modifications written as mass differences after the modified amino acid, 
+    e.g. `C[57.022]`, `M[15.995]` (N-terminal modifications after the first amino acid, e.g. `A[42.011]PEPTIDE`). 
+    
+    Spectra without a label are allowed.
+- Add a row for the dataset to `dataset_tags.tsv`: the folder name (`dataset` column), the reference proteome FASTA file 
+from `PROTEOMES_DIR` (`proteome` column), and `1` or `0` for each dataset tag. The algorithms and the evaluation look up the dataset by its folder name.
+
 Note that algorithm containers only get as input the `/mgf` subfolder with spectra files and **do not** have access to the `labels.csv` file. 
 Only the evaluation container accesses the `labels.csv` file to evaluate algorithm predictions.
 
@@ -153,7 +173,8 @@ To run the benchmark locally:
     ./build_apptainer_images.sh
     ```
 
-    This will build the apptainer images for all algorithms and the evaluation apptainer image.
+    This will build the apptainer images for all algorithms and the evaluation apptainer image. 
+    Building one container typically takes 5–15 minutes, depending on the algorithm and the network speed.
 
     If an apptainer image already exists, the script will ask if you want to rebuild it.
 
@@ -189,6 +210,13 @@ To run the benchmark locally:
     ```bash
     ./run.sh sample_data/9_species_human casanovo
     ```
+    For this example, the script writes the Casanovo predictions for the `9_species_human` sample dataset to 
+    `outputs/casanovo/<version>/9_species_human/output.csv` (one row per predicted spectrum, with `sequence`, `score`, `aa_scores` and `spectrum_id`, 
+    and the predicted retention time `pred_RT` and spectral angle `SA` added by the augmentation step) and the run time to `time.log`, 
+    and adds the Casanovo rows to the evaluation results in `results/9_species_human/`.
+
+    Run time: on one NVIDIA L40S GPU, the algorithms process from about 4 to about 140 spectra per second 
+    (e.g. Casanovo and π-PrimeNovo about 140, DeepNovo about 45, InstaNovo about 20 spectra per second).
 
     Options:
     - `-r` — recalculate the algorithm output, even if it already exists
@@ -222,7 +250,6 @@ To run the benchmark locally:
     Runs the algorithm separately on parts of the dataset's `.mgf` files, merges the part outputs 
     into `outputs/<algorithm>/<version>/<dataset>/output.csv`, then augments and evaluates them. 
     If some part fails, outputs are not merged. A rerun only runs the missing parts.
-```
 
 
 ## Benchmark results
